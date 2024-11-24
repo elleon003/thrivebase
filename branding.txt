@@ -1,0 +1,39 @@
+Target Demographics:
+Primary: Millennials (26-41) and older Gen Z (21-25)
+- Young professionals who are:
+  - Living paycheck to paycheck or trying to build savings
+  - Starting their careers or in early-to-mid career stages
+  - Tech-savvy but seeking simplification in their financial lives
+  - More likely to have varying pay schedules (gig work, freelance, or non-traditional hours)
+  - Value transparency and practical solutions
+  - Likely to have student loans and other regular payment obligations
+
+Font Pairing Recommendation:
+1. Headlines/Display: Inter
+- Modern, clean, and highly readable
+- Professional yet friendly
+- Excellent for digital interfaces
+2. Body Text: Source Sans Pro
+- Pairs well with Inter
+- Excellent readability at smaller sizes
+- Clean and professional while maintaining warmth
+- Works well with your teal-based color scheme
+
+Brand Voice:
+Theme: "Practical Optimism"
+Characteristics:
+- Clear and Direct: No financial jargon or complicated terms
+- Empowering: Focus on giving users control and confidence
+- Friendly but Professional: Approachable without being casual
+- Solution-Oriented: Always emphasizing practical steps and achievable goals
+- Inclusive: Acknowledging different income levels and payment schedules
+- Educational: Providing context and tips without being condescending
+
+Sample Voice Examples:
+✓ "Line up your money with your life, not the other way around"
+✓ "Your pay schedule is unique. Your budget should be too"
+✓ "Take control of your finances, one paycheck at a time"
+
+The combination of your chosen color palette (professional teal with approachable light red accents) works perfectly for this positioning. The teal (--teal: #008080ff) conveys trust and stability, while the light red (--ff6b6bff) adds energy and warmth. The neutral jet and ivory colors provide perfect contrast for readability and visual hierarchy, while the powder blue offers a sophisticated accent color.
+
+This branding approach positions Thrivebase as a modern, practical solution that understands the real-world challenges of managing money in today's diverse employment landscape, particularly appealing to younger professionals who are looking for financial tools that match their actual lifestyle and pay patterns.
