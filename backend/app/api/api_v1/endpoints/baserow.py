@@ -50,7 +50,7 @@ async def store_transactions(
     """
     try:
         user_id = session.get_user_id()
-        table_id = os.getenv("BASEROW_TABLE_ID")
+        table_id = os.getenv("BASEROW_TRANSACTIONS_TABLE_ID")
         
         # Transform transactions into Baserow format
         rows = []
@@ -76,48 +76,69 @@ async def store_transactions(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/newsletter-signup")
-async def store_newsletter_signup(email: str) -> Dict:
-    """
-    Store newsletter signup in Baserow
-    """
-    try:
-        newsletter_table_id = os.getenv("BASEROW_NEWSLETTER_TABLE_ID")
-        
-        # Store in Baserow
-        response = await baserow_request(
-            method="POST",
-            endpoint=f"/database/rows/table/{newsletter_table_id}/",
-            data={
-                "email": email,
-                "signup_date": "NOW()",
-                "status": "active"
-            }
-        )
-        
-        return {"status": "success", "message": "Newsletter signup stored successfully"}
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 @router.get("/user-transactions")
 async def get_user_transactions(
-    session: SessionContainer = Depends(verify_session)
+    session: SessionContainer = Depends(verify_session),
+    account_id: str = None
 ) -> List[Dict]:
     """
-    Get all transactions for a user
+    Get all transactions for a user, optionally filtered by account_id
     """
     try:
         user_id = session.get_user_id()
-        table_id = os.getenv("BASEROW_TABLE_ID")
+        table_id = os.getenv("BASEROW_TRANSACTIONS_TABLE_ID")
+        
+        # Build query parameters
+        query_params = f"user_id={user_id}"
+        if account_id:
+            query_params += f"&account_id={account_id}"
         
         # Query Baserow for user's transactions
         response = await baserow_request(
             method="GET",
-            endpoint=f"/database/rows/table/{table_id}/?user_id={user_id}"
+            endpoint=f"/database/rows/table/{table_id}/?{query_params}"
         )
         
         return response.get("results", [])
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/account-summary")
+async def get_account_summary(
+    session: SessionContainer = Depends(verify_session)
+) -> List[Dict]:
+    """
+    Get summary of all accounts for a user
+    """
+    try:
+        user_id = session.get_user_id()
+        accounts_table_id = os.getenv("BASEROW_ACCOUNTS_TABLE_ID")
+        
+        # Query Baserow for user's accounts
+        response = await baserow_request(
+            method="GET",
+            endpoint=f"/database/rows/table/{accounts_table_id}/?user_id={user_id}"
+        )
+        
+        accounts = response.get("results", [])
+        
+        # Calculate total balances
+        total_current = sum(float(account["balance_current"]) for account in accounts)
+        total_available = sum(
+            float(account["balance_available"]) 
+            for account in accounts 
+            if account["balance_available"] is not None
+        )
+        
+        return {
+            "accounts": accounts,
+            "summary": {
+                "total_current_balance": total_current,
+                "total_available_balance": total_available,
+                "total_accounts": len(accounts)
+            }
+        }
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -135,12 +156,19 @@ async def delete_user_data(
         if session.get_user_id() != user_id:
             raise HTTPException(status_code=403, detail="Unauthorized")
         
-        table_id = os.getenv("BASEROW_TABLE_ID")
+        transactions_table_id = os.getenv("BASEROW_TRANSACTIONS_TABLE_ID")
+        accounts_table_id = os.getenv("BASEROW_ACCOUNTS_TABLE_ID")
         
-        # Delete from Baserow
-        response = await baserow_request(
+        # Delete from Baserow transactions table
+        await baserow_request(
             method="DELETE",
-            endpoint=f"/database/rows/table/{table_id}/?user_id={user_id}"
+            endpoint=f"/database/rows/table/{transactions_table_id}/?user_id={user_id}"
+        )
+        
+        # Delete from Baserow accounts table
+        await baserow_request(
+            method="DELETE",
+            endpoint=f"/database/rows/table/{accounts_table_id}/?user_id={user_id}"
         )
         
         return {"status": "success", "message": "User data deleted successfully"}
