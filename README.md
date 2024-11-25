@@ -5,7 +5,11 @@ ThriveBase is a modern budgeting application designed for freelancers, gig worke
 ## Features
 
 - 🔐 Secure authentication with email/password and Google sign-in
-- 🏦 Bank account integration via Plaid
+- 🏦 Multi-bank account integration via Plaid
+  - Connect multiple bank accounts
+  - Real-time balance tracking
+  - Secure token storage with encryption
+  - Institution information tracking
 - 📊 Transaction tracking and categorization
 - 💰 Variable income handling
 - 📱 Responsive design for all devices
@@ -25,6 +29,7 @@ ThriveBase is a modern budgeting application designed for freelancers, gig worke
 - SuperTokens for authentication
 - Plaid for bank integration
 - Baserow for data storage
+- Fernet symmetric encryption for sensitive data
 
 ## Getting Started
 
@@ -58,7 +63,12 @@ poetry install
 cp .env.example .env
 ```
 
-5. Set up your environment variables in `.env`:
+5. Generate encryption key:
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+6. Set up your environment variables in `.env`:
 ```env
 # FastAPI Settings
 API_V1_STR=/api/v1
@@ -73,10 +83,19 @@ PLAID_ENV=sandbox
 # Supertokens Settings
 SUPERTOKENS_CONNECTION_URI=your_supertokens_connection_uri
 SUPERTOKENS_API_KEY=your_supertokens_api_key
+SUPERTOKENS_APP_NAME=ThriveBase
+SUPERTOKENS_API_DOMAIN=http://localhost:8000
+SUPERTOKENS_WEBSITE_DOMAIN=http://localhost:5173
 
 # Baserow Settings
 BASEROW_API_TOKEN=your_baserow_token
 BASEROW_API_URL=your_baserow_url
+BASEROW_TRANSACTIONS_TABLE_ID=your_transactions_table_id
+BASEROW_ACCOUNTS_TABLE_ID=your_accounts_table_id
+BASEROW_TOKENS_TABLE_ID=your_tokens_table_id
+
+# Security Settings
+ENCRYPTION_KEY=your_generated_encryption_key
 ```
 
 ### Development
@@ -116,10 +135,18 @@ thrivebase/
 ├── backend/
 │   ├── app/
 │   │   ├── api/
+│   │   │   └── api_v1/
+│   │   │       └── endpoints/
+│   │   │           ├── baserow.py
+│   │   │           └── plaid.py
 │   │   ├── core/
+│   │   │   └── security.py
 │   │   ├── models/
+│   │   │   ├── account.py
+│   │   │   └── token.py
 │   │   ├── schemas/
 │   │   ├── services/
+│   │   │   └── token_service.py
 │   │   └── main.py
 │   └── pyproject.toml
 └── README.md
@@ -167,6 +194,21 @@ cd backend
 poetry run uvicorn app.main:app
 ```
 
+## Security Considerations
+
+### Token Storage
+- All Plaid access tokens are encrypted using Fernet symmetric encryption
+- Encryption keys are managed through environment variables
+- No plaintext sensitive data is stored in the database
+- Token status tracking for security auditing
+- Automatic token revocation on account disconnection
+
+### Multi-Bank Support
+- Secure storage of multiple bank connections
+- Institution-level information tracking
+- Real-time balance updates
+- Proper cleanup of sensitive data on disconnection
+
 ## Contributing
 
 1. Fork the repository
@@ -184,3 +226,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Plaid](https://plaid.com/) for banking integration
 - [SuperTokens](https://supertokens.com/) for authentication
 - [Baserow](https://baserow.io/) for database management
+- [cryptography](https://cryptography.io/) for secure token encryption

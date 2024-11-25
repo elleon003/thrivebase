@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { loadScript } from '@/utils/loadScript'
+import { loadScript } from '../utils/loadScript'
 
 export function usePlaid() {
   const isLoading = ref(false)
@@ -76,6 +76,19 @@ export function usePlaid() {
     }
   }
 
+  const getConnectedInstitutions = async () => {
+    try {
+      const response = await fetch('/api/v1/plaid/connected-institutions')
+      if (!response.ok) {
+        throw new Error('Failed to fetch connected institutions')
+      }
+      return await response.json()
+    } catch (err) {
+      error.value = err.message
+      return []
+    }
+  }
+
   const getAccounts = async () => {
     try {
       const response = await fetch('/api/v1/plaid/accounts')
@@ -89,9 +102,49 @@ export function usePlaid() {
     }
   }
 
-  const getTransactions = async () => {
+  const getAccountSummary = async () => {
     try {
-      const response = await fetch('/api/v1/baserow/user-transactions')
+      const response = await fetch('/api/v1/baserow/account-summary')
+      if (!response.ok) {
+        throw new Error('Failed to fetch account summary')
+      }
+      return await response.json()
+    } catch (err) {
+      error.value = err.message
+      return {
+        accounts: [],
+        summary: {
+          total_current_balance: 0,
+          total_available_balance: 0,
+          total_accounts: 0
+        }
+      }
+    }
+  }
+
+  const updateAccountBalances = async (itemId) => {
+    try {
+      const response = await fetch(`/api/v1/plaid/accounts/update/${itemId}`, {
+        method: 'PUT'
+      })
+      if (!response.ok) {
+        throw new Error('Failed to update account balances')
+      }
+      return await response.json()
+    } catch (err) {
+      error.value = err.message
+      throw err
+    }
+  }
+
+  const getTransactions = async (accountId = null) => {
+    try {
+      let url = '/api/v1/baserow/user-transactions'
+      if (accountId) {
+        url += `?account_id=${accountId}`
+      }
+      
+      const response = await fetch(url)
       if (!response.ok) {
         throw new Error('Failed to fetch transactions')
       }
@@ -107,7 +160,10 @@ export function usePlaid() {
     error,
     initPlaidLink,
     disconnectBank,
+    getConnectedInstitutions,
     getAccounts,
+    getAccountSummary,
+    updateAccountBalances,
     getTransactions
   }
 }

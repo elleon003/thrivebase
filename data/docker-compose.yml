@@ -1,0 +1,13 @@
+services:
+  baserow:
+    container_name: baserow
+    image: baserow/baserow:1.29.2
+    environment:
+      BASEROW_PUBLIC_URL: 'http://localhost:8080'
+    ports:
+      - "8080:80"
+      - "4433:443"
+    volumes:
+      - baserow_data:/baserow/data
+volumes:
+  baserow_data:
